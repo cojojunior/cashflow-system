@@ -1,111 +1,88 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+@import "tailwindcss";
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+@theme {
+  /* Brand palette — SME CashFlow Manager */
+  --color-navy-50: #eef2f8;
+  --color-navy-100: #d8e1ef;
+  --color-navy-200: #b3c4dc;
+  --color-navy-300: #859fc4;
+  --color-navy-400: #5a7ba8;
+  --color-navy-500: #3f5d88;
+  --color-navy-600: #2e4669;
+  --color-navy-700: #1f3450;
+  --color-navy-800: #14263b;
+  --color-navy-900: #0b1a2b;
+  --color-navy-950: #060f1b;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --color-teal-50: #e6faf5;
+  --color-teal-100: #c3f3e7;
+  --color-teal-200: #8ce7d2;
+  --color-teal-300: #4fd4b7;
+  --color-teal-400: #22b89a;
+  --color-teal-500: #0d9a80;
+  --color-teal-600: #067c68;
+  --color-teal-700: #086255;
+  --color-teal-800: #0a4e45;
+  --color-teal-900: #0a4039;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+
+  /* Semantic tokens */
+  --color-surface: #ffffff;
+  --color-surface-muted: #f7f9fc;
+  --color-surface-subtle: #eef2f7;
+  --color-border: #e2e8f0;
+  --color-text-primary: #0b1a2b;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+
+  /* Radii & spacing */
+  --radius-card: 0.875rem;
+
+  /* Fonts */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-surface-muted text-text-primary antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-navy-900 font-semibold tracking-tight;
+  }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-teal-500 ring-offset-2 ring-offset-white;
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
 }
