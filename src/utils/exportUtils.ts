@@ -1,10 +1,11 @@
 import { formatCurrency } from "./currency";
 import { formatDate } from "./date";
 
+// 1. Update the interface to allow null values
 interface ExportTransaction {
   occurred_on: string;
   type: string;
-  description: string;
+  description: string | null;
   transaction_categories?: { name: string } | null;
   financial_accounts?: { name: string } | null;
   amount: number;
@@ -29,7 +30,8 @@ export function downloadCSV(
   const rows = transactions.map((tx) => [
     tx.occurred_on,
     tx.type.toUpperCase(),
-    `"${(tx.description || "").replace(/"/g, '""')}"`, // Escape quotes in description
+    // 2. Safely handle null description by falling back to an empty string
+    `"${(tx.description || "").replace(/"/g, '""')}"`,
     tx.transaction_categories?.name || "Uncategorized",
     tx.financial_accounts?.name || "Unknown",
     tx.amount.toFixed(2),

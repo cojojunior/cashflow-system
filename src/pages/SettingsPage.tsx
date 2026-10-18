@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useBusiness } from "@/features/settings/useBusiness";
+import { useAuth } from "@/hooks/useAuth";
 import { settingsService } from "@/services/settingsService";
 import { accountService } from "@/services/accountService";
+import { profileService } from "@/services/profileService";
 import {
   PageHeader,
   Card,
@@ -12,13 +15,17 @@ import {
   Input,
   Skeleton,
 } from "@/components/ui";
-import { Plus, Wallet } from "lucide-react";
+import { Plus, Wallet, LogOut, Download } from "lucide-react";
+import { ROUTES } from "@/constants/app";
+import { supabase } from "@/lib/supabase";
+import { downloadCSV } from "@/utils/exportUtils";
 
 export default function SettingsPage() {
-  // 1. Business Data
+  const { user } = useAuth();
   const { business, isLoading } = useBusiness();
+  const navigate = useNavigate();
 
-  // 2. Business Profile State
+  // Business Profile State
   const [name, setName] = useState(business?.name || "");
   const [threshold, setThreshold] = useState(
     business?.safe_cash_threshold || 0,
@@ -29,7 +36,7 @@ export default function SettingsPage() {
     type: "success" | "error";
   } | null>(null);
 
-  // 3. Account Management State
+  // Account Management State
   const [accounts, setAccounts] = useState<any[]>([]);
   const [newAccName, setNewAccName] = useState("");
   const [newAccType, setNewAccType] = useState<
@@ -37,19 +44,39 @@ export default function SettingsPage() {
   >("mobile_money");
   const [isAddingAcc, setIsAddingAcc] = useState(false);
 
-  // 4. Sync form state when business loads
+  // User Profile & Security State
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
   useEffect(() => {
     if (business) {
       setName(business.name || "");
       setThreshold(business.safe_cash_threshold || 0);
-
-      // Fetch accounts
       accountService
         .getAccounts(business.id)
         .then(setAccounts)
         .catch(console.error);
     }
-  }, [business]);
+
+    if (user) {
+      supabase
+        .from("profiles")
+        .select("full_name, phone")
+        .eq("id", user.id)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            setFullName(data.full_name || "");
+            setPhone(data.phone || "");
+          }
+        });
+    }
+  }, [business, user]);
 
   const handleSaveBusiness = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +88,10 @@ export default function SettingsPage() {
         name,
         safe_cash_threshold: Number(threshold),
       });
-      setMessage({ text: "Settings saved successfully.", type: "success" });
+      setMessage({
+        text: "Business settings saved successfully.",
+        type: "success",
+      });
     } catch (err: any) {
       setMessage({ text: err.message, type: "error" });
     } finally {
@@ -88,6 +118,67 @@ export default function SettingsPage() {
     }
   };
 
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    try {
+      setIsUpdatingProfile(true);
+      await profileService.updateProfile(user.id, { fullName, phone });
+      setMessage({ text: "Profile updated successfully.", type: "success" });
+    } catch (err: any) {
+      setMessage({ text: err.message, type: "error" });
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setMessage({ text: "Passwords do not match.", type: "error" });
+      return;
+    }
+    if (newPassword.length < 8) {
+      setMessage({
+        text: "Password must be at least 8 characters.",
+        type: "error",
+      });
+      return;
+    }
+    try {
+      setIsUpdatingPassword(true);
+      await profileService.updatePassword(newPassword);
+      setMessage({ text: "Password updated successfully.", type: "success" });
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      setMessage({ text: err.message, type: "error" });
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const handleExportData = async () => {
+    if (!business) return;
+    try {
+      setIsExporting(true);
+      const { transactions } = await profileService.exportAllData(business.id);
+      downloadCSV(
+        transactions,
+        `Full_Data_Export_${business.name.replace(/\s+/g, "_")}`,
+      );
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate(ROUTES.login);
+  };
+
   if (isLoading) return <Skeleton className="h-96 w-full max-w-3xl" />;
   if (!business) return null;
 
@@ -95,7 +186,7 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-3xl">
       <PageHeader
         title="Settings"
-        description="Manage your business preferences."
+        description="Manage your business and account preferences."
       />
 
       {message && (
@@ -145,25 +236,9 @@ export default function SettingsPage() {
             </div>
 
             <Button type="submit" isLoading={isSaving}>
-              Save Changes
+              Save Business Details
             </Button>
           </form>
-        </CardContent>
-      </Card>
-
-      {/* Currency */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Currency</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-text-secondary mb-4">
-            All amounts are displayed in Ghana Cedis. Currency cannot be changed
-            once transactions exist.
-          </p>
-          <div className="p-3 bg-surface-subtle rounded-lg font-medium text-navy-900 w-fit">
-            {business.currency} (GH₵)
-          </div>
         </CardContent>
       </Card>
 
@@ -177,7 +252,6 @@ export default function SettingsPage() {
             Manage your wallets. You can transfer money between these accounts.
           </p>
 
-          {/* Existing Accounts List */}
           <div className="divide-y divide-border border border-border rounded-lg bg-surface-subtle">
             {accounts.map((acc) => (
               <div
@@ -200,7 +274,6 @@ export default function SettingsPage() {
             ))}
           </div>
 
-          {/* Add New Account Form */}
           <form
             onSubmit={handleAddAccount}
             className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 pt-4 border-t border-border">
@@ -235,6 +308,122 @@ export default function SettingsPage() {
               Add
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* User Profile */}
+      <Card>
+        <CardHeader>
+          <CardTitle>User Profile</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleUpdateProfile} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-navy-800 mb-1.5">
+                Full Name
+              </label>
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Your name"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-navy-800 mb-1.5">
+                Phone Number (Optional)
+              </label>
+              <Input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="e.g. 024 123 4567"
+              />
+            </div>
+            <Button type="submit" isLoading={isUpdatingProfile}>
+              Save Profile
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Security (Password) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Security</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleUpdatePassword} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-navy-800 mb-1.5">
+                New Password
+              </label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 8 characters"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-navy-800 mb-1.5">
+                Confirm New Password
+              </label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Type password again"
+              />
+            </div>
+            <Button
+              type="submit"
+              isLoading={isUpdatingPassword}
+              variant="outline">
+              Update Password
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Data & Account */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Data & Account</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-surface-subtle rounded-lg border border-border">
+            <div>
+              <h4 className="font-medium text-navy-900 text-sm">
+                Export All Data
+              </h4>
+              <p className="text-xs text-text-secondary mt-1">
+                Download your transactions as a CSV file.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleExportData}
+              isLoading={isExporting}
+              leftIcon={<Download className="h-4 w-4" />}>
+              Export CSV
+            </Button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
+            <div>
+              <h4 className="font-medium text-red-900 text-sm">Sign Out</h4>
+              <p className="text-xs text-red-700 mt-1">
+                Log out of your account on this device.
+              </p>
+            </div>
+            <Button
+              variant="danger"
+              onClick={handleSignOut}
+              leftIcon={<LogOut className="h-4 w-4" />}>
+              Sign Out
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
