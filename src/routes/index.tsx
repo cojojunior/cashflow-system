@@ -15,6 +15,7 @@ import ReportsPage from "@/pages/ReportsPage";
 import LessonDetailPage from "@/pages/LessonDetailPage";
 import TransferPage from "@/pages/TransferPage";
 import PlanningPage from "@/pages/PlanningPage";
+import InsightsPage from "@/pages/InsightsPage";
 
 
 
@@ -47,7 +48,7 @@ export const router = createBrowserRouter([
           { path: "transactions/expenses", element: <TransactionsPage /> },
           { path: "learn", element: <LearnPage /> },
           { path: "settings", element: <SettingsPage /> },
-          { path: "insights", element: <DashboardPage /> },
+          { path: "insights", element: <InsightsPage /> },
           { path: "reports", element: <DashboardPage /> },
           { path: "transactions/add", element: <AddTransactionPage /> },
           { path: "reports", element: <ReportsPage /> },
