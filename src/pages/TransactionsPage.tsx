@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowDownLeft, ArrowUpRight, Search } from "lucide-react";
+import {
+  ArrowRightLeft,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Search,
+} from "lucide-react";
 import { useBusiness } from "@/features/settings/useBusiness";
 import { transactionService } from "@/services/transactionService";
 import {
@@ -45,16 +50,18 @@ export default function TransactionsPage() {
         description="Record and track your daily income and expenses."
         actions={
           <div className="flex gap-2">
+            <Link to={ROUTES.transfer}>
+              <Button
+                variant="outline"
+                leftIcon={<ArrowRightLeft className="h-4 w-4 text-navy-900" />}>
+                Transfer
+              </Button>
+            </Link>
             <Link to={ROUTES.addIncome}>
               <Button
                 variant="outline"
                 leftIcon={<ArrowDownLeft className="h-4 w-4 text-teal-600" />}>
                 Add Income
-              </Button>
-            </Link>
-            <Link to={ROUTES.addExpense}>
-              <Button leftIcon={<ArrowUpRight className="h-4 w-4" />}>
-                Add Expense
               </Button>
             </Link>
           </div>

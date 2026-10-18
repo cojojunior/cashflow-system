@@ -21,6 +21,7 @@ export const ROUTES = {
   login: "/login",
   register: "/register",
   onboarding: "/onboarding",
+  transfer: "/transfer",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

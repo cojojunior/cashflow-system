@@ -13,6 +13,9 @@ import { ROUTES } from "@/constants/app";
 import AddTransactionPage from "@/pages/AddTransactionPage"
 import ReportsPage from "@/pages/ReportsPage";
 import LessonDetailPage from "@/pages/LessonDetailPage";
+import TransferPage from "@/pages/TransferPage";
+
+
 
 export const router = createBrowserRouter([
   // 1. Public routes (redirects to dashboard if already logged in)
@@ -48,6 +51,7 @@ export const router = createBrowserRouter([
           { path: "transactions/add", element: <AddTransactionPage /> },
           { path: "reports", element: <ReportsPage /> },
           { path: "learn/:slug", element: <LessonDetailPage /> },
+          { path: "transfer", element: <TransferPage /> },
         ],
       },
     ],
