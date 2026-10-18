@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FileDown, Printer } from "lucide-react";
 import { useBusiness } from "@/features/settings/useBusiness";
-import { reportService, type ReportFilters } from "@/services/reportService";
+import { reportService, type ReportFilters } from "./reportService";
 import {
   PageHeader,
   Card,

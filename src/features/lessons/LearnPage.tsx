@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BookOpen, CheckCircle2, PlayCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { lessonService } from "@/services/lessonService";
+import { lessonService } from "./lessonService";
 import { PageHeader, Card, Skeleton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 

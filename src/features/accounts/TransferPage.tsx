@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRightLeft, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/features/settings/useBusiness";
-import { accountService } from "@/services/accountService";
+import { accountService } from "@/features/accounts/accountService";
 import {
   PageHeader,
   Card,

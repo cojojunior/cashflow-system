@@ -9,10 +9,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useBusiness } from "@/features/settings/useBusiness";
-import {
-  insightsService,
-  type InsightMetrics,
-} from "@/services/insightsService";
+import { insightsService, type InsightMetrics } from "./insightsService";
 import {
   PageHeader,
   Card,

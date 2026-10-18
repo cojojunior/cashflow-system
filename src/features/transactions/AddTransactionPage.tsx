@@ -5,11 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/features/settings/useBusiness";
-import { transactionService } from "@/services/transactionService";
+import { transactionService } from "./transactionService";
 import {
   transactionSchema,
   type TransactionFormValues,
-} from "@/schemas/transaction";
+} from "./transactionSchema";
 import {
   Input,
   Button,
@@ -51,7 +51,6 @@ export default function AddTransactionPage() {
       amount: 0,
     },
   });
-
 
   useEffect(() => {
     async function loadOptions() {

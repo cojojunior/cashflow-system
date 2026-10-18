@@ -1,23 +1,26 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { RequireAuth, RequireGuest } from "./guards";
-import DashboardPage from "@/pages/DashboardPage";
-import TransactionsPage from "@/pages/TransactionsPage";
-import LearnPage from "@/pages/LearnPage";
+
+// Import from features instead of pages
+import DashboardPage from "@/features/dashboard/DashboardPage";
+import TransactionsPage from "@/features/transactions/TransactionsPage";
+import AddTransactionPage from "@/features/transactions/AddTransactionPage";
+import InsightsPage from "@/features/insights/InsightsPage";
+import ReportsPage from "@/features/reports/ReportsPage";
+import LearnPage from "@/features/lessons/LearnPage";
+import LessonDetailPage from "@/features/lessons/LessonDetailPage";
+import PlanningPage from "@/features/alerts/PlanningPage";
+import TransferPage from "@/features/accounts/TransferPage";
+
+// Keep these in pages (they are auth/global)
 import SettingsPage from "@/pages/SettingsPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import NotFoundPage from "@/pages/NotFoundPage";
+
 import { ROUTES } from "@/constants/app";
-import AddTransactionPage from "@/pages/AddTransactionPage"
-import ReportsPage from "@/pages/ReportsPage";
-import LessonDetailPage from "@/pages/LessonDetailPage";
-import TransferPage from "@/pages/TransferPage";
-import PlanningPage from "@/pages/PlanningPage";
-import InsightsPage from "@/pages/InsightsPage";
-
-
 
 export const router = createBrowserRouter([
   // 1. Public routes (redirects to dashboard if already logged in)

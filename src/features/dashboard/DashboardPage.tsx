@@ -20,10 +20,7 @@ import {
   Cell,
 } from "recharts";
 import { useBusiness } from "@/features/settings/useBusiness";
-import {
-  dashboardService,
-  type DashboardMetrics,
-} from "@/services/dashboardService";
+import { dashboardService, type DashboardMetrics } from "./dashboardService";
 import {
   PageHeader,
   Skeleton,
@@ -39,7 +36,7 @@ import { formatCurrency } from "@/utils/currency";
 import { formatDate } from "@/utils/date";
 import { ROUTES } from "@/constants/app";
 import { cn } from "@/lib/utils";
-import { alertService } from "@/services/alertService";
+import { alertService } from "../alerts/alertService";
 
 const COLORS = [
   "#0d9a80",

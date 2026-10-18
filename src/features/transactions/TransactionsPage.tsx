@@ -7,7 +7,7 @@ import {
   Search,
 } from "lucide-react";
 import { useBusiness } from "@/features/settings/useBusiness";
-import { transactionService } from "@/services/transactionService";
+import { transactionService } from "./transactionService";
 import {
   PageHeader,
   Button,

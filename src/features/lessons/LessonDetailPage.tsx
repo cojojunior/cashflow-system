@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2, ChevronRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
-import { lessonService } from "@/services/lessonService";
+import { lessonService } from "./lessonService";
 import { Button, Card, Skeleton } from "@/components/ui";
 import { ROUTES } from "@/constants/app";
 

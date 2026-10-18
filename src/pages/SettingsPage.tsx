@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useBusiness } from "@/features/settings/useBusiness";
 import { useAuth } from "@/hooks/useAuth";
 import { settingsService } from "@/services/settingsService";
-import { accountService } from "@/services/accountService";
+import { accountService } from "@/features/accounts/accountService";
 import { profileService } from "@/services/profileService";
 import {
   PageHeader,

@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { TransactionFormValues } from "@/schemas/transaction";
+import type { TransactionFormValues } from "./transactionSchema";
 import type { Database } from "@/types/database";
 
 type TransactionInsert = Database["public"]["Tables"]["transactions"]["Insert"];

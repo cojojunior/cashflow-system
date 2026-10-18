@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Calendar, AlertTriangle, Check, Trash2, X } from "lucide-react";
 import { useBusiness } from "@/features/settings/useBusiness";
-import { planningService } from "@/services/planningService";
+import { planningService } from "./planningService";
 import {
   PageHeader,
   Card,
