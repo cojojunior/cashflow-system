@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom";
-import { X } from "lucide-react";
+import { X, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DESKTOP_NAV } from "@/constants/navigation";
+import { ROUTES } from "@/constants/app";
 import { Logo } from "./Logo";
 
 interface SidebarProps {
@@ -25,13 +26,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       {/* Sidebar panel */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-border flex flex-col",
+          "fixed top-0 left-0 z-50 h-screen w-72 bg-white border-r border-border flex flex-col",
           "transition-transform duration-200 ease-in-out",
           "lg:translate-x-0 lg:static lg:z-auto",
           open ? "translate-x-0" : "-translate-x-full",
         )}
         aria-label="Main navigation">
-        <div className="h-16 flex items-center justify-between px-5 border-b border-border">
+        {/* Header */}
+        <div className="h-16 shrink-0 flex items-center justify-between px-5 border-b border-border">
           <Logo />
           <button
             onClick={onClose}
@@ -41,20 +43,31 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </button>
         </div>
 
+        {/* Main Navigation (Scrollable if needed) */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {DESKTOP_NAV.map((item) => (
-            <SidebarLink
-              key={item.to}
-              to={item.to}
-              icon={item.icon}
-              label={item.label}
-              onClick={onClose}
-            />
-          ))}
+          {DESKTOP_NAV.filter((item) => item.label !== "Settings").map(
+            (item) => (
+              <SidebarLink
+                key={item.to}
+                to={item.to}
+                icon={item.icon}
+                label={item.label}
+                onClick={onClose}
+              />
+            ),
+          )}
         </nav>
 
-        <div className="p-4 border-t border-border">
-          <div className="rounded-lg bg-navy-900 text-white p-4">
+        {/* Bottom Section (Settings + Tip) */}
+        <div className="mt-auto shrink-0 border-t border-border p-3 space-y-2">
+          <SidebarLink
+            to={ROUTES.settings}
+            icon={SettingsIcon}
+            label="Settings"
+            onClick={onClose}
+          />
+
+          <div className="rounded-lg bg-navy-900 text-white p-4 mt-2">
             <p className="text-xs text-teal-300 font-medium">Did you know?</p>
             <p className="text-sm mt-1 leading-snug">
               Cash in your account is different from profit. Track both.
