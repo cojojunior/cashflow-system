@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { settingsService } from "@/services/settingsService";
 import { accountService } from "@/features/accounts/accountService";
 import { profileService } from "@/services/profileService";
+import { categoryService } from "@/services/categoryService";
 import {
   PageHeader,
   Card,
@@ -15,7 +16,7 @@ import {
   Input,
   Skeleton,
 } from "@/components/ui";
-import { Plus, Wallet, LogOut, Download } from "lucide-react";
+import { Plus, Wallet, LogOut, Download, Tag, Trash2 } from "lucide-react";
 import { ROUTES } from "@/constants/app";
 import { supabase } from "@/lib/supabase";
 import { downloadCSV } from "@/utils/exportUtils";
@@ -35,6 +36,14 @@ export default function SettingsPage() {
     text: string;
     type: "success" | "error";
   } | null>(null);
+
+  // Categories State
+  const [categories, setCategories] = useState<any[]>([]);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatType, setNewCatType] = useState<"income" | "expense" | "both">(
+    "expense",
+  );
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
 
   // Account Management State
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -60,6 +69,10 @@ export default function SettingsPage() {
       accountService
         .getAccounts(business.id)
         .then(setAccounts)
+        .catch(console.error);
+      categoryService
+        .getCategories(business.id)
+        .then(setCategories)
         .catch(console.error);
     }
 
@@ -115,6 +128,40 @@ export default function SettingsPage() {
       alert("Error adding account: " + err.message);
     } finally {
       setIsAddingAcc(false);
+    }
+  };
+
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!business || !newCatName) return;
+    try {
+      setIsAddingCategory(true);
+      const newCat = await categoryService.createCategory({
+        businessId: business.id,
+        name: newCatName,
+        type: newCatType,
+      });
+      setCategories([...categories, newCat]);
+      setNewCatName("");
+    } catch (err: any) {
+      alert("Error adding category: " + err.message);
+    } finally {
+      setIsAddingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (
+      !confirm(
+        "Delete this category? Transactions using this category will lose their categorization.",
+      )
+    )
+      return;
+    try {
+      await categoryService.deleteCategory(id);
+      setCategories(categories.filter((c) => c.id !== id));
+    } catch (err: any) {
+      alert("Error deleting category: " + err.message);
     }
   };
 
@@ -308,6 +355,95 @@ export default function SettingsPage() {
               Add
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Categories */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Transaction Categories</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <p className="text-sm text-text-secondary">
+            Manage how you categorize your income and expenses. System
+            categories cannot be deleted.
+          </p>
+
+          <form
+            onSubmit={handleAddCategory}
+            className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 p-4 bg-surface-subtle rounded-lg border border-border">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-navy-800 mb-1.5">
+                New Category Name
+              </label>
+              <Input
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                placeholder="e.g. Packaging"
+                required
+              />
+            </div>
+            <div className="w-full sm:w-32">
+              <label className="block text-sm font-medium text-navy-800 mb-1.5">
+                Type
+              </label>
+              <select
+                value={newCatType}
+                onChange={(e) => setNewCatType(e.target.value as any)}
+                className="block w-full h-11 rounded-lg border bg-white px-3.5 text-sm border-border focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <Button
+              type="submit"
+              isLoading={isAddingCategory}
+              leftIcon={<Plus className="h-4 w-4" />}>
+              Add
+            </Button>
+          </form>
+
+          <div className="space-y-4">
+            {["income", "expense", "both"].map((type) => {
+              const typeCats = categories.filter((c) => c.type === type);
+              if (typeCats.length === 0) return null;
+              return (
+                <div key={type}>
+                  <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+                    {type} Categories
+                  </h4>
+                  <div className="border border-border rounded-lg divide-y divide-border">
+                    {typeCats.map((cat) => (
+                      <div
+                        key={cat.id}
+                        className="flex items-center justify-between p-3 bg-white">
+                        <div className="flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-text-muted" />
+                          <span className="text-sm font-medium text-navy-900">
+                            {cat.name}
+                          </span>
+                          {cat.is_system && (
+                            <span className="text-[10px] uppercase bg-surface-subtle text-text-secondary px-2 py-0.5 rounded-full font-semibold">
+                              System
+                            </span>
+                          )}
+                        </div>
+                        {!cat.is_system && (
+                          <button
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            className="p-1.5 rounded-md hover:bg-red-50 text-text-muted hover:text-red-600 transition-colors"
+                            title="Delete">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
 
