@@ -16,7 +16,15 @@ import {
   Input,
   Skeleton,
 } from "@/components/ui";
-import { Plus, Wallet, LogOut, Download, Tag, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Wallet,
+  LogOut,
+  Download,
+  Tag,
+  Trash2,
+  Pencil,
+} from "lucide-react";
 import { ROUTES } from "@/constants/app";
 import { supabase } from "@/lib/supabase";
 import { downloadCSV } from "@/utils/exportUtils";
@@ -45,13 +53,15 @@ export default function SettingsPage() {
   );
   const [isAddingCategory, setIsAddingCategory] = useState(false);
 
-  // Account Management State
+  // Accounts State (includes editing)
   const [accounts, setAccounts] = useState<any[]>([]);
   const [newAccName, setNewAccName] = useState("");
   const [newAccType, setNewAccType] = useState<
     "cash" | "mobile_money" | "bank"
   >("mobile_money");
   const [isAddingAcc, setIsAddingAcc] = useState(false);
+  const [editingAccId, setEditingAccId] = useState<string | null>(null);
+  const [editAccName, setEditAccName] = useState("");
 
   // User Profile & Security State
   const [fullName, setFullName] = useState("");
@@ -128,6 +138,34 @@ export default function SettingsPage() {
       alert("Error adding account: " + err.message);
     } finally {
       setIsAddingAcc(false);
+    }
+  };
+
+  const handleUpdateAccount = async (id: string) => {
+    if (!editAccName.trim()) return;
+    try {
+      await settingsService.updateAccount(id, editAccName);
+      setAccounts(
+        accounts.map((a) => (a.id === id ? { ...a, name: editAccName } : a)),
+      );
+      setEditingAccId(null);
+    } catch (err: any) {
+      alert("Error updating account: " + err.message);
+    }
+  };
+
+  const handleDeleteAccount = async (id: string) => {
+    if (
+      !confirm(
+        "Are you sure you want to deactivate this account? It will no longer appear in dropdowns, but its past transactions will remain intact.",
+      )
+    )
+      return;
+    try {
+      await settingsService.deleteAccount(id);
+      setAccounts(accounts.filter((a) => a.id !== id));
+    } catch (err: any) {
+      alert("Error deleting account: " + err.message);
     }
   };
 
@@ -264,7 +302,6 @@ export default function SettingsPage() {
                 required
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-navy-800 mb-1.5">
                 Safe Cash Threshold (GH₵)
@@ -281,7 +318,6 @@ export default function SettingsPage() {
                 required
               />
             </div>
-
             <Button type="submit" isLoading={isSaving}>
               Save Business Details
             </Button>
@@ -303,20 +339,61 @@ export default function SettingsPage() {
             {accounts.map((acc) => (
               <div
                 key={acc.id}
-                className="flex items-center justify-between p-4 bg-white first:rounded-t-lg last:rounded-b-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
-                    <Wallet className="h-4 w-4" />
+                className="flex items-center justify-between p-4 bg-white first:rounded-t-lg last:rounded-b-lg group">
+                {editingAccId === acc.id ? (
+                  <div className="flex items-center gap-2 w-full">
+                    <Input
+                      value={editAccName}
+                      onChange={(e) => setEditAccName(e.target.value)}
+                      className="h-9 flex-1"
+                      autoFocus
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => handleUpdateAccount(acc.id)}>
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setEditingAccId(null)}>
+                      Cancel
+                    </Button>
                   </div>
-                  <div>
-                    <p className="font-medium text-sm text-navy-900">
-                      {acc.name}
-                    </p>
-                    <p className="text-xs text-text-secondary capitalize">
-                      {acc.type.replace("_", " ")}
-                    </p>
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                        <Wallet className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm text-navy-900">
+                          {acc.name}
+                        </p>
+                        <p className="text-xs text-text-secondary capitalize">
+                          {acc.type.replace("_", " ")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => {
+                          setEditingAccId(acc.id);
+                          setEditAccName(acc.name);
+                        }}
+                        className="p-1.5 text-text-muted hover:text-navy-900 rounded-md hover:bg-surface-subtle"
+                        title="Edit account">
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAccount(acc.id)}
+                        className="p-1.5 text-text-muted hover:text-red-600 rounded-md hover:bg-red-50"
+                        title="Deactivate account">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>

@@ -25,4 +25,21 @@ export const settingsService = {
     if (error) throw error;
     return data;
   },
+
+  async updateAccount(id: string, name: string) {
+    const { error } = await supabase
+      .from("financial_accounts")
+      .update({ name })
+      .eq("id", id);
+    if (error) throw error;
+  },
+
+  async deleteAccount(id: string) {
+    // Soft delete by setting is_active = false
+    const { error } = await supabase
+      .from("financial_accounts")
+      .update({ is_active: false })
+      .eq("id", id);
+    if (error) throw error;
+  },
 };
