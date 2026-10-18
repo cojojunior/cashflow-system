@@ -29,6 +29,49 @@ export const transactionService = {
   },
 
   /**
+   * Reverses a transaction without deleting it.
+   * 1. Marks the original as reversed.
+   * 2. Creates a new opposing transaction (income -> expense, expense -> income).
+   * 3. Links them together.
+   */
+  async reverseTransaction(
+    businessId: string,
+    originalTx: any,
+    userId: string,
+  ) {
+    // 1. Mark original as reversed
+    const { error: updateError } = await supabase
+      .from("transactions")
+      .update({ is_reversed: true })
+      .eq("id", originalTx.id);
+
+    if (updateError) throw updateError;
+
+    // 2. Create the opposing transaction
+    const newType = originalTx.type === "income" ? "expense" : "income";
+    const { data: newTx, error: insertError } = await supabase
+      .from("transactions")
+      .insert({
+        business_id: businessId,
+        account_id: originalTx.account_id,
+        category_id: originalTx.category_id,
+        type: newType,
+        amount: originalTx.amount,
+        occurred_on: new Date().toISOString().split("T")[0], // Today
+        description: `Reversal: ${originalTx.description || "Transaction"}`,
+        payment_method: originalTx.payment_method,
+        notes: `Reversed original transaction from ${originalTx.occurred_on}`,
+        created_by: userId,
+        reversed_transaction_id: originalTx.id,
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+    return newTx;
+  },
+
+  /**
    * Fetch the categories and accounts needed to populate the form dropdowns.
    */
   async getFormOptions(businessId: string) {

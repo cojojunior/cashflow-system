@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRightLeft,
   ArrowDownLeft,
   ArrowUpRight,
   Search,
+  RotateCcw,
+  ArrowRightLeft,
 } from "lucide-react";
 import { useBusiness } from "@/features/settings/useBusiness";
+import { useAuth } from "@/hooks/useAuth";
 import { transactionService } from "./transactionService";
 import {
   PageHeader,
@@ -22,24 +24,44 @@ import { cn } from "@/lib/utils";
 
 export default function TransactionsPage() {
   const { business, isLoading: bizLoading } = useBusiness();
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadData() {
-      if (!business) return;
-      try {
-        setIsLoading(true);
-        const data = await transactionService.getTransactions(business.id);
-        setTransactions(data);
-      } catch (err) {
-        console.error("Failed to load transactions", err);
-      } finally {
-        setIsLoading(false);
-      }
+  const loadData = async () => {
+    if (!business) return;
+    try {
+      setIsLoading(true);
+      const data = await transactionService.getTransactions(business.id);
+      setTransactions(data);
+    } catch (err) {
+      console.error("Failed to load transactions", err);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [business]);
+
+  const handleReverse = async (tx: any) => {
+    if (!business || !user) return;
+    if (
+      !confirm(
+        "Are you sure you want to reverse this transaction? A new opposing transaction will be created.",
+      )
+    )
+      return;
+
+    try {
+      await transactionService.reverseTransaction(business.id, tx, user.id);
+      await loadData();
+    } catch (err: any) {
+      alert("Failed to reverse: " + err.message);
+    }
+  };
 
   if (bizLoading) return <Skeleton className="h-96 w-full" />;
 
@@ -64,11 +86,15 @@ export default function TransactionsPage() {
                 Add Income
               </Button>
             </Link>
+            <Link to={ROUTES.addExpense}>
+              <Button leftIcon={<ArrowUpRight className="h-4 w-4" />}>
+                Add Expense
+              </Button>
+            </Link>
           </div>
         }
       />
 
-      {/* Filters Placeholder (Phase 4 will add date filters) */}
       <div className="flex gap-2">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
@@ -135,18 +161,30 @@ export default function TransactionsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p
-                    className={cn(
-                      "font-semibold text-sm",
-                      tx.type === "income" ? "text-teal-600" : "text-navy-900",
-                    )}>
-                    {tx.type === "income" ? "+" : "-"}
-                    {formatCurrency(tx.amount)}
-                  </p>
-                  <p className="text-xs text-text-muted mt-0.5">
-                    {tx.financial_accounts?.name}
-                  </p>
+
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p
+                      className={cn(
+                        "font-semibold text-sm",
+                        tx.type === "income"
+                          ? "text-teal-600"
+                          : "text-navy-900",
+                      )}>
+                      {tx.type === "income" ? "+" : "-"}
+                      {formatCurrency(tx.amount)}
+                    </p>
+                    <p className="text-xs text-text-muted mt-0.5">
+                      {tx.financial_accounts?.name}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => handleReverse(tx)}
+                    className="p-2 rounded-lg text-text-muted hover:text-red-500 hover:bg-red-50 transition-colors"
+                    title="Reverse Transaction">
+                    <RotateCcw className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
             ))}
