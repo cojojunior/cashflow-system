@@ -45,6 +45,23 @@ export const planningService = {
     return row;
   },
 
+  async updatePlannedExpense(
+    id: string,
+    data: { name: string; amount: number; dueOn: string; note?: string },
+  ) {
+    const { error } = await supabase
+      .from("planned_expenses")
+      .update({
+        name: data.name,
+        amount: data.amount,
+        due_on: data.dueOn,
+        note: data.note || null,
+      })
+      .eq("id", id);
+
+    if (error) throw error;
+  },
+
   /**
    * Mark as paid (or delete).
    */

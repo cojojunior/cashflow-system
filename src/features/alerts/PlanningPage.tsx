@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Plus, Calendar, AlertTriangle, Check, Trash2, X } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  AlertTriangle,
+  Check,
+  Trash2,
+  X,
+  Pencil,
+} from "lucide-react";
 import { useBusiness } from "@/features/settings/useBusiness";
 import { planningService } from "./planningService";
 import {
@@ -33,6 +41,13 @@ export default function PlanningPage() {
   const [note, setNote] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Editing state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editAmount, setEditAmount] = useState("");
+  const [editDueOn, setEditDueOn] = useState("");
+  const [editNote, setEditNote] = useState("");
 
   const loadData = async () => {
     if (!business) return;
@@ -102,6 +117,40 @@ export default function PlanningPage() {
     if (!confirm("Delete this planned expense?")) return;
     try {
       await planningService.deletePlannedExpense(id);
+      await loadData();
+    } catch (err) {
+      alert(normalizeError(err).message);
+    }
+  };
+
+  const startEdit = (item: any) => {
+    setEditingId(item.id);
+    setEditName(item.name);
+    setEditAmount(String(item.amount));
+    setEditDueOn(item.due_on);
+    setEditNote(item.note || "");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const handleUpdate = async (e: React.FormEvent, id: string) => {
+    e.preventDefault();
+    const amt = parseFloat(editAmount);
+    if (isNaN(amt) || amt <= 0) {
+      alert("Please enter a valid amount.");
+      return;
+    }
+
+    try {
+      await planningService.updatePlannedExpense(id, {
+        name: editName,
+        amount: amt,
+        dueOn: editDueOn,
+        note: editNote,
+      });
+      setEditingId(null);
       await loadData();
     } catch (err) {
       alert(normalizeError(err).message);
@@ -300,6 +349,65 @@ export default function PlanningPage() {
                 const isDueSoon =
                   new Date(item.due_on) <=
                   new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+                const isEditing = editingId === item.id;
+
+                if (isEditing) {
+                  return (
+                    <form
+                      key={item.id}
+                      onSubmit={(e) => handleUpdate(e, item.id)}
+                      className="px-5 py-4 bg-teal-50/50 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="h-9 px-3 text-sm rounded-md border border-border w-full"
+                          placeholder="Name"
+                          required
+                        />
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={editAmount}
+                          onChange={(e) => setEditAmount(e.target.value)}
+                          className="h-9 px-3 text-sm rounded-md border border-border w-full"
+                          placeholder="Amount"
+                          required
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          type="date"
+                          value={editDueOn}
+                          onChange={(e) => setEditDueOn(e.target.value)}
+                          className="h-9 px-3 text-sm rounded-md border border-border w-full"
+                          required
+                        />
+                        <input
+                          type="text"
+                          value={editNote}
+                          onChange={(e) => setEditNote(e.target.value)}
+                          className="h-9 px-3 text-sm rounded-md border border-border w-full"
+                          placeholder="Note (optional)"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={cancelEdit}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" size="sm">
+                          Save Changes
+                        </Button>
+                      </div>
+                    </form>
+                  );
+                }
+
                 return (
                   <div
                     key={item.id}
@@ -337,6 +445,12 @@ export default function PlanningPage() {
                       </p>
                     </div>
                     <div className="flex gap-1">
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="p-2 rounded-lg hover:bg-surface-subtle text-text-secondary hover:text-navy-900"
+                        title="Edit">
+                        <Pencil className="h-4 w-4" />
+                      </button>
                       <button
                         onClick={() => handleMarkPaid(item.id)}
                         className="p-2 rounded-lg hover:bg-teal-50 text-text-secondary hover:text-teal-600"
