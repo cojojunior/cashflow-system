@@ -86,3 +86,27 @@
   .no-print { display: none !important; }
   body { background: white; }
 }
+
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+  /* Only show the report container */
+  .print-container, .print-container * {
+    visibility: visible;
+  }
+  /* Position it at the top left */
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none !important;
+    padding: 0 !important;
+  }
+  /* Hide explicit no-print elements */
+  .no-print {
+    display: none !important;
+  }
+}

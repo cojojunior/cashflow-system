@@ -10,6 +10,9 @@ import RegisterPage from "@/pages/RegisterPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import { ROUTES } from "@/constants/app";
+import AddTransactionPage from "@/pages/AddTransactionPage"
+import ReportsPage from "@/pages/ReportsPage";
+import LessonDetailPage from "@/pages/LessonDetailPage";
 
 export const router = createBrowserRouter([
   // 1. Public routes (redirects to dashboard if already logged in)
@@ -25,7 +28,7 @@ export const router = createBrowserRouter([
   {
     element: <RequireAuth />,
     children: [
-      // Onboarding gets its own standalone page 
+      // Onboarding gets its own standalone page
       { path: ROUTES.onboarding, element: <OnboardingPage /> },
 
       // Main app routes (get the sidebar/nav layout)
@@ -42,6 +45,9 @@ export const router = createBrowserRouter([
           { path: "settings", element: <SettingsPage /> },
           { path: "insights", element: <DashboardPage /> },
           { path: "reports", element: <DashboardPage /> },
+          { path: "transactions/add", element: <AddTransactionPage /> },
+          { path: "reports", element: <ReportsPage /> },
+          { path: "learn/:slug", element: <LessonDetailPage /> },
         ],
       },
     ],
