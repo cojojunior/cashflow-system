@@ -2,6 +2,7 @@ import {
   LayoutGrid,
   ArrowLeftRight,
   Plus,
+  BellRing,
   GraduationCap,
   Settings as SettingsIcon,
   BarChart3,
@@ -32,6 +33,7 @@ export const DESKTOP_NAV: NavItem[] = [
   { label: "Dashboard", to: ROUTES.dashboard, icon: LayoutGrid },
   { label: "Transactions", to: ROUTES.transactions, icon: ArrowLeftRight },
   { label: "Insights", to: ROUTES.insights, icon: TrendingUp },
+  { label: "Planning", to: ROUTES.planning, icon: BellRing }, // NEW
   { label: "Reports", to: ROUTES.reports, icon: FileText },
   { label: "Learn", to: ROUTES.learn, icon: GraduationCap },
   { label: "Settings", to: ROUTES.settings, icon: SettingsIcon },

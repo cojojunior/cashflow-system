@@ -14,6 +14,7 @@ import AddTransactionPage from "@/pages/AddTransactionPage"
 import ReportsPage from "@/pages/ReportsPage";
 import LessonDetailPage from "@/pages/LessonDetailPage";
 import TransferPage from "@/pages/TransferPage";
+import PlanningPage from "@/pages/PlanningPage";
 
 
 
@@ -52,6 +53,7 @@ export const router = createBrowserRouter([
           { path: "reports", element: <ReportsPage /> },
           { path: "learn/:slug", element: <LessonDetailPage /> },
           { path: "transfer", element: <TransferPage /> },
+          { path: "planning", element: <PlanningPage /> },
         ],
       },
     ],
