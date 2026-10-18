@@ -14,8 +14,7 @@ export interface OnboardingData {
 }
 
 export async function completeOnboarding(data: OnboardingData) {
-  // 1. Force a session refresh and WAIT for it to complete fully.
-  // This prevents the token from being null during the insert.
+  // 1. Ensure we have a valid session
   const {
     data: { session },
     error: sessionError,
@@ -30,7 +29,7 @@ export async function completeOnboarding(data: OnboardingData) {
     .from("businesses")
     .insert({
       name: data.businessName,
-      owner_id: session.user.id, // Use the verified session ID
+      owner_id: session.user.id,
       business_type: data.businessType,
       location: data.location,
       safe_cash_threshold: data.safeCashThreshold,
@@ -42,7 +41,7 @@ export async function completeOnboarding(data: OnboardingData) {
   if (bizError)
     throw new Error(`Failed to create business: ${bizError.message}`);
 
-  // 3. Create default categories
+  // 3. Create categories
   const categoriesToInsert = [
     ...DEFAULT_INCOME_CATEGORIES.map((c) => ({
       ...c,
@@ -61,7 +60,7 @@ export async function completeOnboarding(data: OnboardingData) {
   if (catError)
     throw new Error(`Failed to create categories: ${catError.message}`);
 
-  // 4. Create the default "Cash Drawer" account
+  // 4. Create account
   const { data: account, error: accError } = await supabase
     .from("financial_accounts")
     .insert({
@@ -75,27 +74,27 @@ export async function completeOnboarding(data: OnboardingData) {
   if (accError)
     throw new Error(`Failed to create cash account: ${accError.message}`);
 
-  // 5. Record the opening balance as a cash adjustment
+  // 5. Opening balance
   if (data.openingBalance > 0) {
     const { error: adjError } = await supabase.from("cash_adjustments").insert({
       business_id: business.id,
       account_id: account.id,
       amount: data.openingBalance,
-      occurred_on: new Date().toISOString().split("T")[0], // today
+      occurred_on: new Date().toISOString().split("T")[0],
       reason: "opening_balance",
       note: "Initial business setup",
-      created_by: session.user.id, // Use verified session ID
+      created_by: session.user.id,
     });
 
     if (adjError)
       throw new Error(`Failed to record opening balance: ${adjError.message}`);
   }
 
-  // 6. Mark user profile as onboarded
+  // 6. Mark onboarded
   const { error: profError } = await supabase
     .from("profiles")
     .update({ onboarded: true })
-    .eq("id", session.user.id); // Use verified session ID
+    .eq("id", session.user.id);
 
   if (profError)
     throw new Error(`Failed to update profile: ${profError.message}`);
