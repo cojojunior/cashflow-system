@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               .from("profiles")
               .select("*")
               .eq("id", session.user.id)
-              .single();
+              .maybeSingle(); // Changed from .single() to .maybeSingle()
             if (mounted) setProfile(prof);
           }
         }
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .from("profiles")
             .select("*")
             .eq("id", session.user.id)
-            .single();
+            .maybeSingle(); // Changed from .single() to .maybeSingle()
           if (mounted) setProfile(prof);
         }, 0);
       } else {
