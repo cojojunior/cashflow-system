@@ -28,11 +28,24 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Filter State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">(
+    "all",
+  );
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   const loadData = async () => {
     if (!business) return;
     try {
       setIsLoading(true);
-      const data = await transactionService.getTransactions(business.id);
+      const data = await transactionService.getTransactions(business.id, {
+        search: searchTerm || undefined,
+        type: filterType,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+      });
       setTransactions(data);
     } catch (err) {
       console.error("Failed to load transactions", err);
@@ -41,10 +54,21 @@ export default function TransactionsPage() {
     }
   };
 
+  // Initial load
   useEffect(() => {
-    loadData();
+    if (business) loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [business]);
+
+  // Debounced filter effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (business) loadData();
+    }, 400);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, filterType, startDate, endDate]);
 
   const handleReverse = async (tx: any) => {
     if (!business || !user) return;
@@ -95,15 +119,58 @@ export default function TransactionsPage() {
         }
       />
 
-      <div className="flex gap-2">
-        <div className="relative flex-1 max-w-md">
+      {/* Filter Bar */}
+      <div className="bg-white p-4 rounded-xl border border-border space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center gap-3">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
           <input
             type="text"
-            placeholder="Search transactions..."
+            placeholder="Search description or reference..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full h-10 pl-9 pr-4 rounded-lg border border-border text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none"
           />
         </div>
+
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value as any)}
+          className="h-10 rounded-lg border border-border bg-white px-3 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none">
+          <option value="all">All Types</option>
+          <option value="income">Income Only</option>
+          <option value="expense">Expenses Only</option>
+        </select>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="h-10 rounded-lg border border-border bg-white px-3 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none"
+            title="Start Date"
+          />
+          <span className="text-text-muted text-sm">to</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="h-10 rounded-lg border border-border bg-white px-3 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none"
+            title="End Date"
+          />
+        </div>
+
+        {(searchTerm || filterType !== "all" || startDate || endDate) && (
+          <button
+            onClick={() => {
+              setSearchTerm("");
+              setFilterType("all");
+              setStartDate("");
+              setEndDate("");
+            }}
+            className="text-xs font-medium text-red-500 hover:text-red-700 h-10 px-2">
+            Clear Filters
+          </button>
+        )}
       </div>
 
       <Card>
@@ -116,12 +183,18 @@ export default function TransactionsPage() {
         ) : transactions.length === 0 ? (
           <EmptyState
             icon={ArrowDownLeft}
-            title="No transactions yet"
-            description="Start recording your daily sales and expenses to see them here."
+            title="No transactions found"
+            description={
+              searchTerm || filterType !== "all" || startDate || endDate
+                ? "Try adjusting your filters or search terms."
+                : "Start recording your daily sales and expenses to see them here."
+            }
             action={
-              <Link to={ROUTES.addIncome}>
-                <Button>Record your first sale</Button>
-              </Link>
+              !(searchTerm || filterType !== "all" || startDate || endDate) ? (
+                <Link to={ROUTES.addIncome}>
+                  <Button>Record your first sale</Button>
+                </Link>
+              ) : undefined
             }
           />
         ) : (

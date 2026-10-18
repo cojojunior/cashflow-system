@@ -6,10 +6,19 @@ type TransactionInsert = Database["public"]["Tables"]["transactions"]["Insert"];
 
 export const transactionService = {
   /**
-   * Fetch transactions for a specific business.
+   * Fetch transactions for a specific business with optional filters.
    */
-  async getTransactions(businessId: string, limit = 50) {
-    const { data, error } = await supabase
+  async getTransactions(
+    businessId: string,
+    options?: {
+      search?: string;
+      type?: "income" | "expense" | "all";
+      startDate?: string;
+      endDate?: string;
+      limit?: number;
+    },
+  ) {
+    let query = supabase
       .from("transactions")
       .select(
         `
@@ -19,10 +28,33 @@ export const transactionService = {
       `,
       )
       .eq("business_id", businessId)
-      .eq("is_reversed", false)
+      .eq("is_reversed", false);
+
+    // 1. Apply Type Filter
+    if (options?.type && options.type !== "all") {
+      query = query.eq("type", options.type);
+    }
+
+    // 2. Apply Date Filters
+    if (options?.startDate) {
+      query = query.gte("occurred_on", options.startDate);
+    }
+    if (options?.endDate) {
+      query = query.lte("occurred_on", options.endDate);
+    }
+
+    // 3. Apply Search (Description or Reference)
+    if (options?.search) {
+      query = query.or(
+        `description.ilike.%${options.search}%,customer_reference.ilike.%${options.search}%`,
+      );
+    }
+
+    // 4. Execute
+    const { data, error } = await query
       .order("occurred_on", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(limit);
+      .limit(options?.limit || 100);
 
     if (error) throw error;
     return data;
@@ -30,9 +62,6 @@ export const transactionService = {
 
   /**
    * Reverses a transaction without deleting it.
-   * 1. Marks the original as reversed.
-   * 2. Creates a new opposing transaction (income -> expense, expense -> income).
-   * 3. Links them together.
    */
   async reverseTransaction(
     businessId: string,
@@ -57,7 +86,7 @@ export const transactionService = {
         category_id: originalTx.category_id,
         type: newType,
         amount: originalTx.amount,
-        occurred_on: new Date().toISOString().split("T")[0], // Today
+        occurred_on: new Date().toISOString().split("T")[0],
         description: `Reversal: ${originalTx.description || "Transaction"}`,
         payment_method: originalTx.payment_method,
         notes: `Reversed original transaction from ${originalTx.occurred_on}`,
@@ -97,8 +126,7 @@ export const transactionService = {
   },
 
   /**
-   * Create a new transaction. Supabase RLS ensures the user
-   * can only write to businesses they belong to.
+   * Create a new transaction.
    */
   async createTransaction(
     businessId: string,
