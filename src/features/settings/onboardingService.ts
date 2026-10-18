@@ -19,7 +19,7 @@ export async function completeOnboarding(data: OnboardingData) {
     .from("businesses")
     .insert({
       name: data.businessName,
-      owner_id: data.userId,
+      owner_id: data.userId, // Put this back
       business_type: data.businessType,
       location: data.location,
       safe_cash_threshold: data.safeCashThreshold,
