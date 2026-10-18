@@ -37,20 +37,23 @@ export default function OnboardingPage() {
     },
   });
 
-  const onSubmit = async (data: OnboardingForm) => {
-    if (!user) return;
-    try {
-      setError(null);
-      await completeOnboarding({
-        ...data,
-        userId: user.id,
-      });
-      // Use window.location to force a full refresh and re-evaluate auth state
-      window.location.href = ROUTES.dashboard;
-    } catch (err) {
-      setError(normalizeError(err).message);
-    }
-  };
+    const onSubmit = async (data: OnboardingForm) => {
+      if (!user) {
+        setError("You must be logged in to complete setup.");
+        return;
+      }
+
+      try {
+        setError(null);
+        await completeOnboarding({
+          ...data,
+          userId: user.id, 
+        });
+        window.location.href = ROUTES.dashboard;
+      } catch (err) {
+        setError(normalizeError(err).message);
+      }
+    };
 
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-surface-muted">
