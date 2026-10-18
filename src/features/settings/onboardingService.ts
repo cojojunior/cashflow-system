@@ -24,12 +24,12 @@ export async function completeOnboarding(data: OnboardingData) {
     throw new Error("Your session has expired. Please log in again.");
   }
 
-  // 2. Create the business
+  // 1. Create the business
   const { data: business, error: bizError } = await supabase
     .from("businesses")
+    // @ts-expect-error - owner_id is auto-filled by the database trigger
     .insert({
       name: data.businessName,
-      owner_id: session.user.id,
       business_type: data.businessType,
       location: data.location,
       safe_cash_threshold: data.safeCashThreshold,
