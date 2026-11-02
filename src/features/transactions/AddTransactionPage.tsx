@@ -58,27 +58,30 @@ export default function AddTransactionPage() {
 
   const watchAmount = watch("amount");
 
-  useEffect(() => {
-    async function loadOptions() {
-      if (!business) return;
-      try {
-        const data = await transactionService.getFormOptions(business.id);
-        const filteredCategories = data.categories.filter(
-          (c) => c.type === type || c.type === "both",
-        );
-        setOptions({ accounts: data.accounts, categories: filteredCategories });
+    useEffect(() => {
+      async function loadOptions() {
+        if (!business) return;
+        try {
+          const data = await transactionService.getFormOptions(business.id);
+          const filteredCategories = data.categories.filter(
+            (c) => c.type === type || c.type === "both",
+          );
+          setOptions({
+            accounts: data.accounts,
+            categories: filteredCategories,
+          });
 
-        if (data.accounts.length > 0) {
-          setValue("account_id", data.accounts[0].id);
+          if (data.accounts.length > 0) {
+            setValue("account_id", data.accounts[0].id);
+          }
+        } catch (err) {
+          setError(normalizeError(err).message);
+        } finally {
+          setIsLoadingOptions(false);
         }
-      } catch (err) {
-        setError(normalizeError(err).message);
-      } finally {
-        setIsLoadingOptions(false);
       }
-    }
-    loadOptions();
-  }, [business, type, setValue]);
+      loadOptions();
+    }, [business, type, setValue]);
 
   const onSubmit = async (data: TransactionFormValues) => {
     if (!business || !user) return;
