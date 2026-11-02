@@ -26,10 +26,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       {/* Sidebar panel */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen w-72 bg-white border-r border-border flex flex-col",
-          "transition-transform duration-200 ease-in-out",
-          "lg:translate-x-0 lg:static lg:z-auto lg:h-screen",
+          // Base styles (Mobile drawer)
+          "fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-border flex flex-col transition-transform duration-200 ease-in-out",
           open ? "translate-x-0" : "-translate-x-full",
+
+          // Desktop styles (Static, full height, always visible)
+          "lg:static lg:translate-x-0 lg:h-full lg:z-auto",
         )}
         aria-label="Main navigation">
         {/* Header */}
@@ -66,7 +68,6 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             label="Settings"
             onClick={onClose}
           />
-
           <div className="rounded-lg bg-navy-900 text-white p-4 mt-2 shadow-sm">
             <p className="text-xs text-teal-300 font-medium">Pro Tip</p>
             <p className="text-sm mt-1 leading-snug">
