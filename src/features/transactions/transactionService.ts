@@ -112,7 +112,7 @@ export const transactionService = {
         .eq("is_active", true),
       supabase
         .from("transaction_categories")
-        .select("id, name, type")
+        .select("id, name, type") // Make sure 'type' is selected
         .eq("business_id", businessId),
     ]);
 
