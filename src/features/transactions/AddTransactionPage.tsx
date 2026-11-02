@@ -26,8 +26,12 @@ import { todayISO } from "@/utils/date";
 import { cn } from "@/lib/utils";
 
 export default function AddTransactionPage() {
-  const { type } = useParams<{ type: "income" | "expense" }>();
-  const isIncome = type === "income";
+  // 1. Route param can be "income" or "expenses" (based on ROUTES constants)
+  const { type } = useParams<{ type: "income" | "expenses" }>();
+
+  // 2. Map to the database enum ("income" or "expense")
+  const dbType = type === "expenses" ? "expense" : "income";
+  const isIncome = dbType === "income";
 
   const { user } = useAuth();
   const { business, isLoading: bizLoading } = useBusiness();
@@ -36,7 +40,10 @@ export default function AddTransactionPage() {
   const [options, setOptions] = useState<{
     accounts: any[];
     categories: any[];
-  }>({ accounts: [], categories: [] });
+  }>({
+    accounts: [],
+    categories: [],
+  });
   const [error, setError] = useState<string | null>(null);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
 
@@ -49,7 +56,7 @@ export default function AddTransactionPage() {
   } = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
-      type: type || "income",
+      type: dbType,
       occurred_on: todayISO(),
       payment_method: "cash",
       amount: undefined,
@@ -58,48 +65,51 @@ export default function AddTransactionPage() {
 
   const watchAmount = watch("amount");
 
-       useEffect(() => {
-         async function loadOptions() {
-           if (!business) return;
-           try {
-             const data = await transactionService.getFormOptions(business.id);
+  useEffect(() => {
+    async function loadOptions() {
+      if (!business) return;
+      try {
+        const data = await transactionService.getFormOptions(business.id);
 
-             // Safely filter categories
-             const filteredCategories = data.categories.filter((c: any) => {
-               return c.type === type || c.type === "both";
-             });
+        // 3. Filter categories based on the singular dbType
+        const filteredCategories = data.categories.filter((c: any) => {
+          return c.type === dbType || c.type === "both";
+        });
 
-             setOptions({
-               accounts: data.accounts,
-               categories: filteredCategories,
-             });
+        setOptions({ accounts: data.accounts, categories: filteredCategories });
 
-             if (data.accounts.length > 0) {
-               setValue("account_id", data.accounts[0].id);
-             }
-           } catch (err) {
-             console.error("Failed to load options:", err);
-             setError(normalizeError(err).message);
-           } finally {
-             setIsLoadingOptions(false);
-           }
-         }
-         loadOptions();
-       }, [business, type, setValue]);
-       
+        // Auto-select the first account
+        if (data.accounts.length > 0) {
+          setValue("account_id", data.accounts[0].id);
+        }
+      } catch (err) {
+        console.error("Failed to load options:", err);
+        setError(normalizeError(err).message);
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    }
+    loadOptions();
+  }, [business, dbType, setValue]);
+
   const onSubmit = async (data: TransactionFormValues) => {
     if (!business || !user) return;
     try {
       setError(null);
-      await transactionService.createTransaction(business.id, user.id, data);
+      // 4. Ensure we send the singular type to the database
+      await transactionService.createTransaction(business.id, user.id, {
+        ...data,
+        type: dbType,
+      });
       navigate(ROUTES.transactions);
     } catch (err) {
       setError(normalizeError(err).message);
     }
   };
 
-  if (bizLoading || isLoadingOptions)
+  if (bizLoading || isLoadingOptions) {
     return <Skeleton className="h-96 w-full max-w-2xl mx-auto mt-8" />;
+  }
 
   return (
     <div className="max-w-2xl mx-auto pb-12">
