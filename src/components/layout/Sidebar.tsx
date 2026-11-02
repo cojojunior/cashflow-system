@@ -28,7 +28,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         className={cn(
           "fixed top-0 left-0 z-50 h-screen w-72 bg-white border-r border-border flex flex-col",
           "transition-transform duration-200 ease-in-out",
-          "lg:translate-x-0 lg:static lg:z-auto",
+          "lg:translate-x-0 lg:static lg:z-auto lg:h-screen",
           open ? "translate-x-0" : "-translate-x-full",
         )}
         aria-label="Main navigation">
@@ -43,7 +43,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </button>
         </div>
 
-        {/* Main Navigation (Scrollable if needed) */}
+        {/* Main Navigation (Scrollable) */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {DESKTOP_NAV.filter((item) => item.label !== "Settings").map(
             (item) => (
@@ -59,7 +59,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </nav>
 
         {/* Bottom Section (Settings + Tip) */}
-        <div className="mt-auto shrink-0 border-t border-border p-3 space-y-2">
+        <div className="mt-auto shrink-0 border-t border-border p-3 space-y-2 bg-surface-subtle">
           <SidebarLink
             to={ROUTES.settings}
             icon={SettingsIcon}
@@ -67,8 +67,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             onClick={onClose}
           />
 
-          <div className="rounded-lg bg-navy-900 text-white p-4 mt-2">
-            <p className="text-xs text-teal-300 font-medium">Did you know?</p>
+          <div className="rounded-lg bg-navy-900 text-white p-4 mt-2 shadow-sm">
+            <p className="text-xs text-teal-300 font-medium">Pro Tip</p>
             <p className="text-sm mt-1 leading-snug">
               Cash in your account is different from profit. Track both.
             </p>
@@ -116,5 +116,3 @@ function SidebarLink({
     </NavLink>
   );
 }
-
-export { Sidebar as default };

@@ -52,7 +52,7 @@ export default function AddTransactionPage() {
       type: type || "income",
       occurred_on: todayISO(),
       payment_method: "cash",
-      amount: 0,
+      amount: undefined,
     },
   });
 
@@ -120,9 +120,10 @@ export default function AddTransactionPage() {
       <Card className="overflow-hidden">
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            {/* Giant Amount Input */}
             <div
               className={cn(
-                "p-6 rounded-xl text-center border-2 transition-colors",
+                "p-6 rounded-2xl text-center border-2 transition-colors",
                 isIncome
                   ? "bg-teal-50 border-teal-100"
                   : "bg-red-50 border-red-100",
@@ -133,8 +134,8 @@ export default function AddTransactionPage() {
               <div className="relative">
                 <span
                   className={cn(
-                    "absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-bold",
-                    isIncome ? "text-teal-600/50" : "text-red-500/50",
+                    "absolute left-0 top-1/2 -translate-y-1/2 text-4xl font-bold",
+                    isIncome ? "text-teal-600/30" : "text-red-500/30",
                   )}>
                   ₵
                 </span>
@@ -142,8 +143,9 @@ export default function AddTransactionPage() {
                   type="number"
                   step="0.01"
                   min="0"
+                  autoFocus
                   className={cn(
-                    "block w-full bg-transparent text-center text-5xl font-bold outline-none placeholder:text-navy-300",
+                    "block w-full bg-transparent text-center text-6xl font-bold outline-none placeholder:text-navy-200",
                     isIncome ? "text-teal-700" : "text-red-700",
                   )}
                   placeholder="0.00"
@@ -151,19 +153,19 @@ export default function AddTransactionPage() {
                 />
               </div>
               {errors.amount && (
-                <p className="mt-2 text-sm text-red-600">
+                <p className="mt-2 text-sm text-red-600 font-medium">
                   {errors.amount.message}
                 </p>
               )}
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-navy-800 mb-1.5">
                   <Tag className="h-4 w-4 text-text-muted" /> Category
                 </label>
                 <select
-                  className="block w-full h-11 rounded-lg border bg-white px-3.5 text-sm border-border focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+                  className="block w-full h-12 rounded-xl border bg-white px-3.5 text-base border-border focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
                   {...register("category_id")}>
                   <option value="">Select a category...</option>
                   {options.categories.map((c) => (
@@ -186,6 +188,7 @@ export default function AddTransactionPage() {
                   </label>
                   <Input
                     type="date"
+                    className="h-12 text-base rounded-xl"
                     error={errors.occurred_on?.message}
                     {...register("occurred_on")}
                   />
@@ -195,7 +198,7 @@ export default function AddTransactionPage() {
                     <Wallet className="h-4 w-4 text-text-muted" /> Account
                   </label>
                   <select
-                    className="block w-full h-11 rounded-lg border bg-white px-3.5 text-sm border-border focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+                    className="block w-full h-12 rounded-xl border bg-white px-3.5 text-base border-border focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
                     {...register("account_id")}>
                     <option value="">Select account...</option>
                     {options.accounts.map((a) => (
@@ -218,7 +221,7 @@ export default function AddTransactionPage() {
                   Method
                 </label>
                 <select
-                  className="block w-full h-11 rounded-lg border bg-white px-3.5 text-sm border-border focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+                  className="block w-full h-12 rounded-xl border bg-white px-3.5 text-base border-border focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
                   {...register("payment_method")}>
                   {PAYMENT_METHODS.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -233,6 +236,7 @@ export default function AddTransactionPage() {
                   Description
                 </label>
                 <Input
+                  className="h-12 text-base rounded-xl"
                   placeholder={
                     isIncome
                       ? "e.g. Sold 2 bags of rice"
@@ -249,6 +253,7 @@ export default function AddTransactionPage() {
                     Customer Ref (Optional)
                   </label>
                   <Input
+                    className="h-12 text-base rounded-xl"
                     placeholder="e.g. Invoice #123"
                     {...register("customer_reference")}
                   />
@@ -258,6 +263,7 @@ export default function AddTransactionPage() {
                     Notes (Optional)
                   </label>
                   <Input
+                    className="h-12 text-base rounded-xl"
                     placeholder="Any extra details..."
                     {...register("notes")}
                   />
@@ -269,14 +275,16 @@ export default function AddTransactionPage() {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => navigate(ROUTES.transactions)}>
+                onClick={() => navigate(ROUTES.transactions)}
+                className="h-12">
                 Cancel
               </Button>
               <Button
                 type="submit"
                 size="lg"
                 isLoading={isSubmitting}
-                variant={isIncome ? "success" : "danger"}>
+                variant={isIncome ? "success" : "danger"}
+                className="h-12 text-base w-full sm:w-auto">
                 Save {isIncome ? "Income" : "Expense"}{" "}
                 {watchAmount > 0 ? `(${formatCurrency(watchAmount)})` : ""}
               </Button>
