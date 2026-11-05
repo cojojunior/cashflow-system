@@ -15,6 +15,21 @@ android {
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
+
+        signingConfigs {
+    release {
+        storeFile file("../../my-release-key.jks") // Adjust path if needed
+        storePassword 'cojo@1111'
+        keyAlias "my-key-alias"
+        keyPassword 'cojo@1111'
+    }
+}
+buildTypes {
+    release {
+        signingConfig signingConfigs.release
+        minifyEnabled false
+    }
+}
     }
     buildTypes {
         release {
