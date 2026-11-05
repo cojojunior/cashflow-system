@@ -113,9 +113,11 @@ export default function DashboardPage() {
         title={`Hello, ${business?.name}`}
         description="Here is your business at a glance."
         actions={
-          <Link to={ROUTES.addIncome}>
-            <Button>Record Sale</Button>
-          </Link>
+          <div className="hidden sm:flex">
+            <Link to={ROUTES.addIncome}>
+              <Button>Record Sale</Button>
+            </Link>
+          </div>
         }
       />
 

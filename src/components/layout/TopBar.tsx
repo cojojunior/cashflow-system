@@ -9,7 +9,8 @@ interface TopBarProps {
 
 export function TopBar({ onMenuClick, onAddClick }: TopBarProps) {
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur border-b border-border">
+    <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur border-b border-border pt-[env(safe-area-inset-top)]">
+      {" "}
       <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
